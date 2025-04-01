@@ -1,4 +1,4 @@
-package blog.dal;
+package game.dal;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
