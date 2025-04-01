@@ -1,5 +1,3 @@
-package blog;
-
 import blog.model.*;
 import blog.dal.*;
 import java.sql.Connection;
