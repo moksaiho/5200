@@ -1,61 +1,146 @@
-# 5200
-# CS5200 PM3 JDBC Project
+CS5200: Milestone 3
+Team: [Your Team Name]
+Date: [Submission Date]
 
-## Overview
+1. Overview
+Our project models a game database with the following entities:
 
-This project implements a game-style database in MySQL with corresponding Java model classes and DAO (Data Access Object) classes. The database stores:
+Player – represents a user account
 
-- **Players** (individual game accounts)
-- **Races** (like Human, Elf, etc.)
-- **Clans** (groups associated with a certain Race)
-- **Characters** (belong to a Player and a Clan)
-- **Jobs** (e.g., Warrior, Mage), linked to Characters via a join table
-- **Currencies** (in-game monetary types), also linked to Characters
-- **Items** (base table)
-  - **Gear** (specific equipment items, referencing Item)
-  - **Consumable** (potions, etc., referencing Item)
+Race – e.g. “Human,” “Elf,” etc.
 
-We’ve created Java DAO classes for these tables, each supporting create/read/update/delete operations using JDBC with prepared statements.
+Clan – belongs to a specific Race
 
-## DAO Methods Covered
+Character – each belongs to a Player and a Clan
 
-Each DAO class has:
+Job – “class” or “profession,” with a many-to-many relationship to Character
 
-- **Create** – e.g., `RaceDao.create()`, `PlayerDao.create()`, etc.
-- **Read by primary key** – e.g., `RaceDao.getRaceByID()`, `PlayerDao.getPlayerByID()`
-- **Read by non-PK attribute** – e.g., `RaceDao.getRacesByName()`, `PlayerDao.getPlayersByEmailDomain()`, etc.
-- **Update** – e.g., `RaceDao.updateRaceName()`, `PlayerDao.updateEmail()`
-- **Delete** – e.g., `RaceDao.delete()`, `PlayerDao.delete()`
+Item (base table)
 
-Each DAO method uses **prepared statements** to avoid SQL injection risks.
+Gear – extends Item for equippable objects
 
-## How to Compile and Run
+Consumable – extends Item for single-use objects
 
-1. **MySQL Setup**  
-   - Ensure you have a local or remote MySQL server running.
-   - In `ConnectionManager.java`, update `USER`, `PASSWORD`, `HOSTNAME`, `PORT`, and `SCHEMA` if needed.
+EquippedItem – join for which gear is worn by a character
 
-2. **Compile**  
-   - Make sure all `.java` files (model classes, DAO classes, `ConnectionManager.java`, and `Driver.java`) plus the MySQL Connector/J jar are in your classpath. Example command (Linux/macOS):
-     ```bash
-     javac -cp .:mysql-connector-java-X.Y.Z.jar game/model/*.java game/dal/*.java game/Driver.java
-     ```
-   - On Windows, separate classpath entries with a semicolon (`;`).
+Currency and CharacterCurrency – tracks in-game money for each character
 
-3. **Run**  
-   - After successful compilation, run the `Driver` class:
-     ```bash
-     java -cp .:mysql-connector-java-X.Y.Z.jar game.Driver
-     ```
-   - The program will:
-     1. Drop any existing schema named `CS5200Project`.
-     2. Create a fresh `CS5200Project` schema.
-     3. Create all the necessary tables.
-     4. Invoke DAO methods to insert (CREATE), select (READ), update, and delete data in the new schema.
+StatisticType – e.g. HP, MP
 
-## Notes
+StatisticBonus – join between Item and StatisticType (items that increase stats)
 
-- **Schema Reset**: Running the driver will destroy any existing `CS5200Project` schema.  
-- **Foreign Keys**: The sample code uses `ON DELETE CASCADE` in many places, so child records are removed automatically when the parent record is deleted (or we do it in an explicit order).  
-- **Extend Further**: If you create additional DAOs (e.g., `StatisticTypeDao`, `InventoryDao`, etc.), you can add matching `CREATE TABLE` statements in the `createTables()` method and call them in `Driver` to exercise all CRUD functions. 
-- **References**: For PM3, you only need to demonstrate that each table’s DAO class can do the four required operations. The provided `Driver` code covers that with simple test data. You can refine or expand it as needed for future milestones.
+CharacterStatistics – join between Character and StatisticType
+
+2. DAO Classes Implemented
+We have one DAO class per non-enumeration table. Each DAO class implements:
+
+create – inserts a record
+
+read by PK – fetches a single record by primary key
+
+read by non-PK – e.g., by name, email domain, or foreign key references
+
+update – modifies one field
+
+delete – removes the record
+
+CRUD Methods Summary
+RaceDao
+
+create, getRaceByID (PK), getRacesByName (non-PK), updateRaceName, delete
+
+PlayerDao
+
+create, getPlayerByID, getPlayersByEmailDomain (non-PK), updateEmail, delete
+
+ClanDao
+
+create, getClanByID, getClansByRace (non-PK), updateClanName, delete
+
+CharacterDao
+
+create, getCharacterByID, [optionally getCharactersByName], update methods if needed, delete
+
+JobDao
+
+create, getJobByID, getJobsByName (non-PK), updateJobName, delete
+
+CharacterJobDao (join)
+
+create, getByCharacterAndJob (PK), getJobsForCharacter (non-PK), updateExperiencePoints, delete
+
+CurrencyDao
+
+create, getCurrencyByID, [optionally get by name], [optionally update], delete
+
+CharacterCurrencyDao (join)
+
+create, getCharacterCurrencyByID, [optionally get for a character], updateAmounts, delete
+
+ItemDao
+
+create, getItemByID, getItemsByLevel (non-PK), updateItemPrice, delete
+
+GearDao
+
+create, getGearByID, getGearBySlot (non-PK), updateRequiredLevel, delete
+
+ConsumableDao
+
+create, getConsumableByID, getConsumablesByDescription (non-PK), updateDescription, delete
+
+EquippedItemDao
+
+create, getByCharacterAndSlot (PK), getByCharacter (non-PK), updateEquippedGear, delete
+
+GearJobDao
+
+create, getByItemAndJob (PK), getByGear / getByJob (non-PK), updateJob, delete
+
+StatisticTypeDao
+
+create, getStatisticTypeByName (PK), [getStatisticTypeByDescription], updateDescription, delete
+
+StatisticBonusDao
+
+create, getStatisticBonus (PK), getBonusesByItem (non-PK), updateFlatValue, delete
+
+CharacterStatisticsDao
+
+create, getByCharacterAndStat (PK), getByCharacter (non-PK), updateStatValue, delete
+
+3. Driver Class
+Driver.java automates:
+
+resetSchema() – drops & recreates the CS5200Project schema.
+
+createTables() – runs all CREATE TABLE statements.
+
+Creates sample data in each table using create(...).
+
+Demonstrates reading data by PK and non-PK.
+
+Demonstrates updating attributes.
+
+Deletes records in an order respecting foreign keys.
+
+Upon execution, it prints out the intermediate steps and confirms each operation works as expected.
+
+4. How to Compile and Run
+Update ConnectionManager – Make sure USER, PASSWORD, and DB info are correct.
+
+Compile all .java files (model, DAO, Driver.java) plus the MySQL connector JAR in your classpath.
+
+Run the Driver class with the MySQL connector JAR. The console output will display the creation, reading, updating, and deletion sequences.
+
+5. Security / SQL Injection Prevention
+We consistently use PreparedStatement with ? placeholders, ensuring user input is always parameterized. This approach avoids string concatenation in SQL statements, significantly reducing injection risk.
+
+6. Conclusion
+This submission meets the PM3 requirements:
+
+One DAO per non-enumeration table, covering all CRUD methods.
+
+A Driver class that resets the schema, recreates tables, and demonstrates the DAOs with sample data.
+
+The code uses prepared statements for security, matching best practices taught in class.
