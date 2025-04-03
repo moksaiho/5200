@@ -1,0 +1,461 @@
+package game;
+
+import game.dal.*;
+import game.model.*;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+
+/**
+ * Driver class for CS5200 PM3. Demonstrates table creation and DAO CRUD methods.
+ */
+public class Driver {
+
+    public static void main(String[] args) {
+        // 1. Drop and recreate the CS5200Project schema
+        resetSchema();
+
+        // 2. Create the tables
+        createTables();
+
+        // 3. Exercise DAO methods
+        try (Connection connection = ConnectionManager.getConnection()) {
+            System.out.println("Connected to the database.");
+
+            /****************************************
+             * 1) Race
+             ****************************************/
+            // CREATE
+            Race race = RaceDao.create(connection, "Human");
+            System.out.println("Created Race: " + race);
+
+            // READ (by PK)
+            Race sameRace = RaceDao.getRaceByID(connection, race.getRaceID());
+            System.out.println("Retrieved Race by ID: " + sameRace);
+
+            // READ (by non-PK)
+            List<Race> racesByName = RaceDao.getRacesByName(connection, "Human");
+            System.out.println("Retrieved Races by name (\"Human\"): " + racesByName);
+
+            // UPDATE
+            Race updatedRace = RaceDao.updateRaceName(connection, race, "Humanity");
+            System.out.println("Updated Race: " + updatedRace);
+
+            // DELETE
+            // (We’ll wait to delete until near the end, because Race is used by other tables.)
+
+            /****************************************
+             * 2) Player
+             ****************************************/
+            // CREATE
+            Player player = PlayerDao.create(connection, "Bruce Wayne", "bruce@wayneenterprises.com");
+            System.out.println("Created Player: " + player);
+
+            // READ (by PK)
+            Player samePlayer = PlayerDao.getPlayerByID(connection, player.getPlayerID());
+            System.out.println("Retrieved Player by ID: " + samePlayer);
+
+            // READ (by non-PK) - example from PlayerDao
+            List<Player> sameDomainPlayers = PlayerDao.getPlayersByEmailDomain(connection, "wayneenterprises.com");
+            System.out.println("Players with email domain wayneenterprises.com: " + sameDomainPlayers);
+
+            // UPDATE
+            Player updatedPlayer = PlayerDao.updateEmail(connection, player, "bruce@batman.org");
+            System.out.println("Updated Player's email: " + updatedPlayer);
+
+            // We’ll delete the Player near the end.
+
+            /****************************************
+             * 3) Clan
+             ****************************************/
+            // CREATE
+            Clan clan = ClanDao.create(connection, "WayneClan", updatedRace);
+            System.out.println("Created Clan: " + clan);
+
+            // READ (by PK)
+            Clan sameClan = ClanDao.getClanByID(connection, clan.getClanID());
+            System.out.println("Retrieved Clan by ID: " + sameClan);
+
+            // READ (by non-PK): get all clans for a given Race
+            List<Clan> clansForRace = ClanDao.getClansByRace(connection, updatedRace);
+            System.out.println("Retrieved Clans for Race (Humanity): " + clansForRace);
+
+            // UPDATE
+            Clan updatedClan = ClanDao.updateClanName(connection, clan, "BatClan");
+            System.out.println("Updated Clan: " + updatedClan);
+
+            // We’ll delete at the end.
+
+            /****************************************
+             * 4) Character
+             ****************************************/
+            // CREATE
+            // (assuming you have CharacterDao implemented; if not, comment out this section)
+            game.model.Character character = CharacterDao.create(connection,
+                player, clan, "Batman", "DarkKnight");
+            System.out.println("Created Character: " + character);
+
+            // READ (by PK)
+            game.model.Character sameCharacter = CharacterDao.getCharacterByID(connection, character.getCharacterID());
+            System.out.println("Retrieved Character by ID: " + sameCharacter);
+
+            // (If you have a "getCharactersByName" or other non-PK method, demonstrate it here.)
+
+            // UPDATE
+            // e.g. if you have a method to update lastName
+            // character = CharacterDao.updateLastName(connection, character, "Batman");
+            // System.out.println("Updated Character: " + character);
+
+            // We’ll delete the Character at the end.
+
+            /****************************************
+             * 5) Job
+             ****************************************/
+            // CREATE
+            Job job = JobDao.create(connection, "BAT", "Dark Knight Job");
+            System.out.println("Created Job: " + job);
+
+            // READ
+            Job sameJob = JobDao.getJobByID(connection, "BAT");
+            System.out.println("Retrieved Job by ID: " + sameJob);
+
+            // Non-PK search
+            List<Job> jobsByName = JobDao.getJobsByName(connection, "Dark Knight Job");
+            System.out.println("Retrieved Jobs by name: " + jobsByName);
+
+            // UPDATE
+            Job updatedJob = JobDao.updateJobName(connection, job, "BatmanJob");
+            System.out.println("Updated Job: " + updatedJob);
+
+            // We’ll delete it at the end.
+
+            /****************************************
+             * 6) Item
+             ****************************************/
+            // CREATE
+            Item item = ItemDao.create(connection, "Batarang", 1, 10, 100);
+            System.out.println("Created Item: " + item);
+
+            // READ
+            Item sameItem = ItemDao.getItemByID(connection, item.getItemID());
+            System.out.println("Retrieved Item by ID: " + sameItem);
+
+            // Non-PK search
+            List<Item> itemsAtLevel = ItemDao.getItemsByLevel(connection, 1);
+            System.out.println("Items at level 1: " + itemsAtLevel);
+
+            // UPDATE
+            Item updatedItem = ItemDao.updateItemPrice(connection, item, 150);
+            System.out.println("Updated Item price: " + updatedItem);
+
+            // We’ll delete it at the end.
+
+            /****************************************
+             * 7) Gear
+             ****************************************/
+            // CREATE
+            Gear gear = GearDao.create(connection,
+                "BatHelmet", 5, 1, 500,
+                Gear.GearType.armor, Gear.SlotType.head, 5, null);
+            System.out.println("Created Gear: " + gear);
+
+            // READ
+            Gear sameGear = GearDao.getGearByID(connection, gear.getItemID());
+            System.out.println("Retrieved Gear by ID: " + sameGear);
+
+            // Non-PK search: by slot, for instance
+            List<Gear> gearList = GearDao.getGearBySlot(connection, Gear.SlotType.head);
+            System.out.println("Gears for slot HEAD: " + gearList);
+
+            // UPDATE
+            Gear updatedGear = GearDao.updateRequiredLevel(connection, gear, 6);
+            System.out.println("Updated Gear required level: " + updatedGear);
+
+            // We’ll delete it at the end.
+
+            /****************************************
+             * 8) Consumable
+             ****************************************/
+            // CREATE
+            Consumable potion = ConsumableDao.create(connection,
+                "HealthPotion", 1, 5, 25, "Heals 100 HP");
+            System.out.println("Created Consumable: " + potion);
+
+            // READ
+            Consumable samePotion = ConsumableDao.getConsumableByID(connection, potion.getItemID());
+            System.out.println("Retrieved Consumable by ID: " + samePotion);
+
+            // Non-PK search
+            List<Consumable> potions = ConsumableDao.getConsumablesByDescription(connection, "Heals 100 HP");
+            System.out.println("Consumables with description 'Heals 100 HP': " + potions);
+
+            // UPDATE
+            Consumable updatedPotion = ConsumableDao.updateDescription(connection, potion, "Heals 250 HP");
+            System.out.println("Updated Consumable description: " + updatedPotion);
+
+            // We’ll delete it at the end.
+
+            /****************************************
+             * 9) CharacterJob (join table example)
+             ****************************************/
+            // CREATE
+            CharacterJob charJob = CharacterJobDao.create(connection, character, job, 1, 100);
+            System.out.println("Created CharacterJob: " + charJob);
+
+            // READ
+            CharacterJob sameCharJob = CharacterJobDao.getByCharacterAndJob(
+                connection, character.getCharacterID(), job.getJobID());
+            System.out.println("Retrieved CharacterJob by PK: " + sameCharJob);
+
+            // Non-PK: e.g. getJobsForCharacter
+            List<CharacterJob> cJobs = CharacterJobDao.getJobsForCharacter(connection, character);
+            System.out.println("Jobs for Character: " + cJobs);
+
+            // UPDATE
+            CharacterJob updatedCJ = CharacterJobDao.updateExperiencePoints(connection, charJob, 500);
+            System.out.println("Updated CharacterJob experience: " + updatedCJ);
+
+            // We’ll delete it at the end.
+
+            /****************************************
+             * 10) Currency + CharacterCurrency
+             ****************************************/
+            // CREATE
+            Currency currency = CurrencyDao.create(connection, "BatCoin", 1000, 500);
+            System.out.println("Created Currency: " + currency);
+
+            Currency sameCurrency = CurrencyDao.getCurrencyByID(connection, currency.getCurrencyID());
+            System.out.println("Retrieved Currency by ID: " + sameCurrency);
+
+            CharacterCurrency charCurrency = CharacterCurrencyDao.create(connection, character, currency, 200, 50);
+            System.out.println("Created CharacterCurrency: " + charCurrency);
+
+            CharacterCurrency sameCharCurr = CharacterCurrencyDao.getCharacterCurrencyByID(
+                    connection, character.getCharacterID(), currency.getCurrencyID());
+            System.out.println("Retrieved CharacterCurrency by IDs: " + sameCharCurr);
+
+            // Example of a non-PK search: 
+            // (if you had "getCharacterCurrenciesByCurrency()" or something, you could call it here)
+
+            // Update
+            CharacterCurrency updatedCharCurr = CharacterCurrencyDao.updateAmounts(connection, charCurrency, 300, 60);
+            System.out.println("Updated CharacterCurrency amounts: " + updatedCharCurr);
+
+            // Now, demonstrate deletions in an order that respects foreign keys.
+            // We start by deleting many-to-many / child records, then parents.
+
+            // DELETE child tables first:
+            CharacterCurrencyDao.delete(connection, updatedCharCurr);
+            CharacterJobDao.delete(connection, updatedCJ);
+
+            // DELETE gear/consumable items
+            GearDao.delete(connection, updatedGear);
+            ConsumableDao.delete(connection, updatedPotion);
+            ItemDao.delete(connection, updatedItem); // must be after gear/consumable is gone
+
+            // DELETE parent's child references
+            // e.g. Character
+            CharacterDao.delete(connection, sameCharacter);
+
+            // Then remove clan and currency
+            ClanDao.delete(connection, updatedClan);
+            CurrencyDao.delete(connection, sameCurrency);
+
+            // Then remove job
+            JobDao.delete(connection, updatedJob);
+
+            // Finally, remove the player and race
+            PlayerDao.delete(connection, updatedPlayer);
+            RaceDao.delete(connection, updatedRace);
+
+            System.out.println("All records deleted successfully.");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Drops (if exists) and recreates the CS5200Project schema.
+     */
+    private static void resetSchema() {
+        try (Connection schemalessCxn = ConnectionManager.getSchemalessConnection();
+             Statement stmt = schemalessCxn.createStatement()) {
+
+            // Drop and recreate the schema
+            stmt.executeUpdate("DROP SCHEMA IF EXISTS CS5200Project;");
+            stmt.executeUpdate("CREATE SCHEMA CS5200Project;");
+
+            System.out.println("Schema CS5200Project has been reset.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Creates all tables for the classes you’ve shown in your model.
+     * If you write more DAO classes (e.g. for StatisticType, Inventory, etc.),
+     * you can add matching CREATE TABLE statements here.
+     */
+    private static void createTables() {
+        try (Connection connection = ConnectionManager.getConnection();
+             Statement stmt = connection.createStatement()) {
+
+            // Use backticks around Character because it's a reserved word in MySQL
+            // Adjust data types as needed (various fields, lengths, etc.).
+            // The table definitions below are examples matching your DAOs & models.
+
+            // Race table
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.Race (
+                  raceID INT AUTO_INCREMENT,
+                  raceName VARCHAR(255) NOT NULL,
+                  PRIMARY KEY (raceID)
+                )
+            """);
+
+            // Player table
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.Player (
+                  playerID INT AUTO_INCREMENT,
+                  fullName VARCHAR(255) NOT NULL,
+                  email VARCHAR(255) NOT NULL,
+                  PRIMARY KEY (playerID),
+                  UNIQUE(email)
+                )
+            """);
+
+            // Clan table
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.Clan (
+                  clanID INT AUTO_INCREMENT,
+                  clanName VARCHAR(255) NOT NULL,
+                  raceID INT NOT NULL,
+                  PRIMARY KEY (clanID),
+                  FOREIGN KEY (raceID)
+                    REFERENCES CS5200Project.Race(raceID)
+                    ON DELETE CASCADE
+                )
+            """);
+
+            // Character table
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.`Character` (
+                  characterID INT AUTO_INCREMENT,
+                  playerID INT NOT NULL,
+                  clanID INT NOT NULL,
+                  firstName VARCHAR(255) NOT NULL,
+                  lastName VARCHAR(255) NOT NULL,
+                  PRIMARY KEY (characterID),
+                  FOREIGN KEY (playerID)
+                    REFERENCES CS5200Project.Player(playerID)
+                    ON DELETE CASCADE,
+                  FOREIGN KEY (clanID)
+                    REFERENCES CS5200Project.Clan(clanID)
+                    ON DELETE CASCADE
+                )
+            """);
+
+            // Job table (jobID is a string PK based on your code)
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.Job (
+                  jobID VARCHAR(255) NOT NULL,
+                  jobName VARCHAR(255) NOT NULL,
+                  PRIMARY KEY (jobID)
+                )
+            """);
+
+            // CharacterJob table (Composite PK: characterID + jobID)
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.CharacterJob (
+                  characterID INT NOT NULL,
+                  jobID VARCHAR(255) NOT NULL,
+                  level INT NOT NULL,
+                  experiencePoints INT NOT NULL,
+                  PRIMARY KEY (characterID, jobID),
+                  FOREIGN KEY (characterID)
+                    REFERENCES CS5200Project.`Character`(characterID)
+                    ON DELETE CASCADE,
+                  FOREIGN KEY (jobID)
+                    REFERENCES CS5200Project.Job(jobID)
+                    ON DELETE CASCADE
+                )
+            """);
+
+            // Currency table
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.Currency (
+                  currencyID INT AUTO_INCREMENT,
+                  currencyName VARCHAR(255) NOT NULL,
+                  cap INT NULL,
+                  weeklyCap INT NULL,
+                  PRIMARY KEY (currencyID)
+                )
+            """);
+
+            // CharacterCurrency table (Composite PK: characterID + currencyID)
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.CharacterCurrency (
+                  characterID INT NOT NULL,
+                  currencyID INT NOT NULL,
+                  amount INT NOT NULL,
+                  weeklyAmountAcquired INT NOT NULL,
+                  PRIMARY KEY (characterID, currencyID),
+                  FOREIGN KEY (characterID)
+                    REFERENCES CS5200Project.`Character`(characterID)
+                    ON DELETE CASCADE,
+                  FOREIGN KEY (currencyID)
+                    REFERENCES CS5200Project.Currency(currencyID)
+                    ON DELETE CASCADE
+                )
+            """);
+
+            // Item table
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.Item (
+                  itemID INT AUTO_INCREMENT,
+                  itemName VARCHAR(255) NOT NULL,
+                  itemLevel INT NOT NULL,
+                  itemMaxStackSize INT NOT NULL,
+                  itemPrice INT NOT NULL,
+                  PRIMARY KEY (itemID)
+                )
+            """);
+
+            // Gear table (1-to-1 with Item)
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.Gear (
+                  itemID INT NOT NULL,
+                  gearType VARCHAR(255) NOT NULL,
+                  slot VARCHAR(255) NOT NULL,
+                  requiredLevel INT NOT NULL,
+                  damage INT NULL,
+                  PRIMARY KEY (itemID),
+                  FOREIGN KEY (itemID)
+                    REFERENCES CS5200Project.Item(itemID)
+                    ON DELETE CASCADE
+                )
+            """);
+
+            // Consumable table (1-to-1 with Item)
+            stmt.executeUpdate("""
+                CREATE TABLE CS5200Project.Consumable (
+                  itemID INT NOT NULL,
+                  description VARCHAR(255) NOT NULL,
+                  PRIMARY KEY (itemID),
+                  FOREIGN KEY (itemID)
+                    REFERENCES CS5200Project.Item(itemID)
+                    ON DELETE CASCADE
+                )
+            """);
+
+            System.out.println("Tables created successfully in CS5200Project schema.");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
