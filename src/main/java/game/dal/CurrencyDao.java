@@ -1,8 +1,8 @@
-package dao;
+package game.dal;
 
 import java.sql.*;
 
-import model.Currency;
+import game.model.Currency;
 
 
 public class CurrencyDao {
