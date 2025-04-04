@@ -1,13 +1,13 @@
-package dao;
+package game.dal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import model.Character;
-import model.Currency;
-import model.CharacterCurrency;
+import game.model.Character;
+import game.model.Currency;
+import game.model.CharacterCurrency;
 
 
 public class CharacterCurrencyDao {
