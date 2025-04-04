@@ -1,13 +1,13 @@
-package dao;
+package game.dal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import model.Gear;
-import model.GearJob;
-import model.Job;
+import game.model.Gear;
+import game.model.GearJob;
+import game.model.Job;
 
 public class GearJobDao {
 	/**
