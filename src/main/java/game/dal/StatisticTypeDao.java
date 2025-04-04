@@ -1,4 +1,4 @@
-package dao;
+package game.dal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import model.StatisticType;
+import game.model.StatisticType;
 
 public class StatisticTypeDao {
 	/**
