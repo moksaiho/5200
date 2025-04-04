@@ -1,13 +1,13 @@
-package dao;
+package game.dal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import model.Character;
-import model.CharacterStatistics;
-import model.StatisticType;
+import game.model.Character;
+import game.model.CharacterStatistics;
+import game.model.StatisticType;
 
 public class CharacterStatisticsDao {
 
