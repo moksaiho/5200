@@ -1,14 +1,14 @@
-package dao;
+package game.dal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import model.Character;
+import game.model.Character;
 
-import model.Inventory;
-import model.Item;
+import game.model.Inventory;
+import game.model.Item;
 
 
 public class InventoryDao {
