@@ -1,15 +1,15 @@
-package dao;
+package game.dal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import model.Character;
-import model.EquippedItem;
-import model.Gear;
-import model.Gear.SlotType;
-import model.Item;
+import game.model.Character;
+import game.model.EquippedItem;
+import game.model.Gear;
+import game.model.Gear.SlotType;
+import game.model.Item;
 
 public class EquippedItemDao {
 	/**
