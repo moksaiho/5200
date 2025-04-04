@@ -1,13 +1,13 @@
-package dao;
+package game.dal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import model.Item;
-import model.StatisticBonus;
-import model.StatisticType;
+import game.model.Item;
+import game.model.StatisticBonus;
+import game.model.StatisticType;
 
 public class StatisticBonusDao {
 	/**
