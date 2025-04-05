@@ -1,0 +1,35 @@
+CS5200 Milestone 3 - Implementation of Required DAO Methods
+=======================================================
+
+This document specifies which classes contain implementations of the three required "additional" methods.
+
+1. Classes with Methods that Return Lists of Matching Records (Non-PK Search)
+--------------------------------------------------------------------------
+- game.dal.CharacterDao
+  * getCharactersByLastName(Connection, String): List<Character>
+- game.dal.GearDao
+  * getGearBySlot(Connection, SlotType): List<Gear>
+- game.dal.PlayerDao
+  * getPlayersByFirstName(Connection, String): List<Player>
+
+2. Classes with Update Methods
+-----------------------------
+- game.dal.CharacterDao
+  * updateFirstName(Connection, Character, String): Character
+- game.dal.GearDao
+  * updateRequiredLevel(Connection, Gear, int): Gear
+- game.dal.ConsumableDao
+  * updateDescription(Connection, Consumable, String): Consumable
+- game.dal.PlayerDao
+  * updateEmail(Connection, Player, String): Player
+
+3. Classes with Delete Methods
+-----------------------------
+- game.dal.CharacterDao
+  * delete(Connection, Character): void
+- game.dal.GearDao
+  * delete(Connection, Gear): void
+- game.dal.PlayerDao
+  * delete(Connection, Player): void
+- game.dal.ClanDao
+  * delete(Connection, Clan): void

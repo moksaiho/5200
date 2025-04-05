@@ -93,11 +93,11 @@ public class CharacterJobDao {
     /**
      * Deletes a CharacterJob record.
      */
-    public static void delete(Connection cxn, CharacterJob cj) throws SQLException {
+    public static void delete(Connection cxn, CharacterJob characterJob) throws SQLException {
         String sql = "DELETE FROM CharacterJob WHERE characterID = ? AND jobID = ?";
         try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
-            stmt.setInt(1, cj.getCharacter().getCharacterID());
-            stmt.setString(2, cj.getJob().getJobID());
+            stmt.setInt(1, characterJob.getCharacter().getCharacterID());
+            stmt.setString(2, characterJob.getJob().getJobID());
             stmt.executeUpdate();
         }
     }

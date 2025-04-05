@@ -13,8 +13,16 @@ public class CurrencyDao {
         String sql = "INSERT INTO Currency (currencyName, cap, weeklyCap) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = cxn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, currencyName);
-            stmt.setInt(2, cap);
-            stmt.setInt(3, weeklyCap);
+            if (cap != null) {
+                stmt.setInt(2, cap);
+            } else {
+                stmt.setNull(2, Types.INTEGER);
+            }
+            if (weeklyCap != null) {
+                stmt.setInt(3, weeklyCap);
+            } else {
+                stmt.setNull(3, Types.INTEGER);
+            }
             stmt.executeUpdate();
 
             try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -22,7 +30,7 @@ public class CurrencyDao {
                     int currencyID = keys.getInt(1);
                     return new Currency(currencyID, currencyName, cap, weeklyCap);
                 } else {
-                    throw new SQLException("Character creation failed, no ID returned.");
+                    throw new SQLException("Currency creation failed, no ID returned.");
                 }
             }
         }
@@ -39,7 +47,13 @@ public class CurrencyDao {
                 if (rs.next()) {
                     String currencyName = rs.getString("currencyName");
                     Integer cap = rs.getInt("cap");
+                    if (rs.wasNull()) {
+                        cap = null;
+                    }
                     Integer weeklyCap = rs.getInt("weeklyCap");
+                    if (rs.wasNull()) {
+                        weeklyCap = null;
+                    }
                     return new Currency(currencyID, currencyName, cap, weeklyCap);
                 } else {
                     return null;
