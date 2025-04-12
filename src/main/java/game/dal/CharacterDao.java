@@ -101,4 +101,76 @@ public class CharacterDao {
             stmt.executeUpdate();
         }
     }
+
+    /**
+     * Get a list of all characters, limited by a maximum number.
+     */
+    public static List<Character> getAllCharacters(Connection cxn, int limit) throws SQLException {
+        String sql = "SELECT * FROM `Character` LIMIT ?";
+        List<Character> characters = new ArrayList<>();
+        try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int characterID = rs.getInt("characterID");
+                    int playerID = rs.getInt("playerID");
+                    int clanID = rs.getInt("clanID");
+                    String firstName = rs.getString("firstName");
+                    String lastName = rs.getString("lastName");
+
+                    Player player = PlayerDao.getPlayerByID(cxn, playerID);
+                    Clan clan = ClanDao.getClanByID(cxn, clanID);
+
+                    characters.add(new Character(characterID, player, clan, firstName, lastName));
+                }
+            }
+        }
+        return characters;
+    }
+
+    /**
+     * Get a list of characters by first or last name (partial match).
+     */
+    public static List<Character> getCharactersByName(Connection cxn, String name) throws SQLException {
+        String sql = "SELECT * FROM `Character` WHERE firstName LIKE ? OR lastName LIKE ?";
+        List<Character> characters = new ArrayList<>();
+        try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
+            String searchTerm = "%" + name + "%";
+            stmt.setString(1, searchTerm);
+            stmt.setString(2, searchTerm);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int characterID = rs.getInt("characterID");
+                    int playerID = rs.getInt("playerID");
+                    int clanID = rs.getInt("clanID");
+                    String firstName = rs.getString("firstName");
+                    String lastName = rs.getString("lastName");
+
+                    Player player = PlayerDao.getPlayerByID(cxn, playerID);
+                    Clan clan = ClanDao.getClanByID(cxn, clanID);
+
+                    characters.add(new Character(characterID, player, clan, firstName, lastName));
+                }
+            }
+        }
+        return characters;
+    }
+
+    /**
+     * Update a character's last name.
+     */
+    public static Character updateLastName(Connection cxn, Character character, String newLastName) throws SQLException {
+        String sql = "UPDATE `Character` SET lastName = ? WHERE characterID = ?";
+        try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
+            stmt.setString(1, newLastName);
+            stmt.setInt(2, character.getCharacterID());
+            int updated = stmt.executeUpdate();
+            if (updated == 1) {
+                character.setLastName(newLastName);
+                return character;
+            } else {
+                return null;
+            }
+        }
+    }
 }

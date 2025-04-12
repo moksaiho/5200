@@ -72,7 +72,7 @@ public class Driver {
             // Create tables in order of dependencies
             stmt.execute("""
                 CREATE TABLE Race (
-                    raceID INT AUTO_INCREMENT PRIMARY KEY,
+                    raceID INT AUTO_INCREMENT PRIMARY KEY, 
                     raceName VARCHAR(50) NOT NULL
                 )""");
 
