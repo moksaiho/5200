@@ -4,3 +4,6 @@
 
 # 编译输出目录
 build/
+.classpath
+lib/mysql-connector-j-8.3.0.jar
+src/main/java/game/dal/ConnectionManager.java
