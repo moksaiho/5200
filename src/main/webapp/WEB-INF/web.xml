@@ -5,7 +5,9 @@
 	id="WebApp_ID" version="3.0">
 	<display-name>Game Database Web Application</display-name>
 	<welcome-file-list>
-		<welcome-file>FindCharacters.jsp</welcome-file>
+		<welcome-file>findcharacters</welcome-file>
 	</welcome-file-list>
+	
+</web-app>
 	
 	
