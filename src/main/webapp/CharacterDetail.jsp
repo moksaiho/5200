@@ -146,10 +146,10 @@
                                                     <c:out value="${equippedItem.slot}" />
                                                 </td>
                                                 <td>
-                                                    <c:out value="${equippedItem.gear.item.itemName}" />
+                                                    <c:out value="${equippedItem.gear.itemName}" />
                                                 </td>
                                                 <td>
-                                                    <c:out value="${equippedItem.gear.item.itemLevel}" />
+                                                    <c:out value="${equippedItem.gear.itemLevel}" />
                                                 </td>
                                                 <td>
                                                     <c:out value="${equippedItem.gear.requiredLevel}" />
@@ -161,7 +161,7 @@
                             </c:choose>
                         </div>
 
-                        <a href="characterupdate?characterId=<c:out value=" ${character.characterID}" />"
+                        <a href="characterupdate?characterId=${character.characterID}"
                         class="button">Edit Character</a>
                     </div>
                 </body>

@@ -71,7 +71,7 @@
                         </tr>
                         <c:forEach items="${characters}" var="character">
                             <tr>
-                                <td><a href="characterdetail?characterId=<c:out value=" ${character.characterID}" />">
+                                <td><a href="${pageContext.request.contextPath}/characterdetail?characterId=${character.characterID}">
                                     <c:out value="${character.firstName} ${character.lastName}" /></a>
                                 </td>
                                 <td>
