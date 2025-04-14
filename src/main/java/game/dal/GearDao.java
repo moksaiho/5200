@@ -43,11 +43,10 @@ public class GearDao {
             stmt.setString(2, gearType.name());
             stmt.setString(3, slot.name());
             stmt.setInt(4, requiredLevel);
-            if (damage != null) {
-                stmt.setInt(5, damage);
-            } else {
-                stmt.setNull(5, Types.INTEGER);
-            }
+            
+            // 使用工具类处理可能为null的damage
+            Utils.setNullableInt(stmt, 5, damage);
+            
             stmt.executeUpdate();
         }
 
@@ -77,10 +76,11 @@ public class GearDao {
                     GearType gearType = GearType.valueOf(rs.getString("gearType"));
                     SlotType slot = SlotType.valueOf(rs.getString("slot"));
                     int requiredLevel = rs.getInt("requiredLevel");
-                    int damage = rs.getInt("damage");
-                    if (rs.wasNull()) damage = -1;
+                    
+                    // 使用工具类处理可能为null的damage
+                    Integer damage = Utils.getNullableInt(rs, "damage");
 
-                    return new Gear(itemID, name, level, stack, price, gearType, slot, requiredLevel, damage != -1 ? damage : null);
+                    return new Gear(itemID, name, level, stack, price, gearType, slot, requiredLevel, damage);
                 } else {
                     return null;
                 }
@@ -113,10 +113,11 @@ public class GearDao {
                     GearType gearType = GearType.valueOf(rs.getString("gearType"));
                     SlotType s = SlotType.valueOf(rs.getString("slot"));
                     int requiredLevel = rs.getInt("requiredLevel");
-                    int damage = rs.getInt("damage");
-                    if (rs.wasNull()) damage = -1;
+                    
+                    // 使用工具类处理可能为null的damage
+                    Integer damage = Utils.getNullableInt(rs, "damage");
 
-                    result.add(new Gear(itemID, name, level, stack, price, gearType, s, requiredLevel, damage != -1 ? damage : null));
+                    result.add(new Gear(itemID, name, level, stack, price, gearType, s, requiredLevel, damage));
                 }
             }
         }
@@ -134,6 +135,26 @@ public class GearDao {
             int updated = stmt.executeUpdate();
             if (updated == 1) {
                 gear.setRequiredLevel(newLevel);
+                return gear;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Updates damage value of gear.
+     */
+    public static Gear updateDamage(Connection cxn, Gear gear, Integer newDamage) throws SQLException {
+        String sql = "UPDATE Gear SET damage = ? WHERE itemID = ?";
+        try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
+            // 使用工具类处理可能为null的newDamage
+            Utils.setNullableInt(stmt, 1, newDamage);
+            
+            stmt.setInt(2, gear.getItemID());
+            int updated = stmt.executeUpdate();
+            if (updated == 1) {
+                gear.setDamage(newDamage);
                 return gear;
             } else {
                 return null;

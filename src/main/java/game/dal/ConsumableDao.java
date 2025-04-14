@@ -36,7 +36,11 @@ public class ConsumableDao {
         String consumableSql = "INSERT INTO Consumable (itemID, description) VALUES (?, ?)";
         try (PreparedStatement stmt = cxn.prepareStatement(consumableSql)) {
             stmt.setInt(1, itemID);
-            stmt.setString(2, description);
+            if (description == null) {
+                stmt.setNull(2, Types.VARCHAR);
+            } else {
+                stmt.setString(2, description);
+            }
             stmt.executeUpdate();
         }
 
@@ -72,10 +76,16 @@ public class ConsumableDao {
      */
     public static List<Consumable> getConsumablesByDescription(Connection cxn, String desc) throws SQLException {
         String sql = "SELECT i.itemID, i.itemName, i.itemLevel, i.itemMaxStackSize, i.itemPrice, c.description " +
-                     "FROM Item i JOIN Consumable c ON i.itemID = c.itemID WHERE c.description = ?";
+                     "FROM Item i JOIN Consumable c ON i.itemID = c.itemID WHERE c.description = ? OR (c.description IS NULL AND ? IS NULL)";
         List<Consumable> result = new ArrayList<>();
         try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
-            stmt.setString(1, desc);
+            if (desc == null) {
+                stmt.setNull(1, Types.VARCHAR);
+                stmt.setNull(2, Types.VARCHAR);
+            } else {
+                stmt.setString(1, desc);
+                stmt.setString(2, desc);
+            }
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     int itemID = rs.getInt("itemID");
@@ -83,7 +93,8 @@ public class ConsumableDao {
                     int level = rs.getInt("itemLevel");
                     int stack = rs.getInt("itemMaxStackSize");
                     int price = rs.getInt("itemPrice");
-                    result.add(new Consumable(itemID, name, level, stack, price, desc));
+                    String description = rs.getString("description");
+                    result.add(new Consumable(itemID, name, level, stack, price, description));
                 }
             }
         }
@@ -96,7 +107,11 @@ public class ConsumableDao {
     public static Consumable updateDescription(Connection cxn, Consumable consumable, String newDesc) throws SQLException {
         String sql = "UPDATE Consumable SET description = ? WHERE itemID = ?";
         try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
-            stmt.setString(1, newDesc);
+            if (newDesc == null) {
+                stmt.setNull(1, Types.VARCHAR);
+            } else {
+                stmt.setString(1, newDesc);
+            }
             stmt.setInt(2, consumable.getItemID());
             int updated = stmt.executeUpdate();
             if (updated == 1) {

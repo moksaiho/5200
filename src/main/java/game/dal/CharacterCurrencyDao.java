@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import game.model.Character;
 import game.model.Currency;
@@ -53,5 +55,48 @@ public class CharacterCurrencyDao {
         }
     }
 
+    /**
+     * Gets all currencies for a character.
+     */
+    public static List<CharacterCurrency> getCurrenciesForCharacter(Connection cxn, Character character) throws SQLException {
+        String sql = "SELECT cc.currencyID, cc.amount, cc.weeklyAmountAcquired FROM CharacterCurrency cc WHERE cc.characterID = ?";
+        List<CharacterCurrency> result = new ArrayList<>();
+        
+        try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
+            stmt.setInt(1, character.getCharacterID());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int currencyID = rs.getInt("currencyID");
+                    int amount = rs.getInt("amount");
+                    int weeklyAmountAcquired = rs.getInt("weeklyAmountAcquired");
+                    
+                    Currency currency = CurrencyDao.getCurrencyByID(cxn, currencyID);
+                    result.add(new CharacterCurrency(character, currency, amount, weeklyAmountAcquired));
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Updates the amount of a specific currency for a character.
+     */
+    public static CharacterCurrency updateAmount(Connection cxn, CharacterCurrency characterCurrency, int newAmount) throws SQLException {
+        String sql = "UPDATE CharacterCurrency SET amount = ? WHERE characterID = ? AND currencyID = ?";
+        try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
+            stmt.setInt(1, newAmount);
+            stmt.setInt(2, characterCurrency.getCharacter().getCharacterID());
+            stmt.setInt(3, characterCurrency.getCurrency().getCurrencyID());
+            int updated = stmt.executeUpdate();
+            
+            if (updated == 1) {
+                characterCurrency.setAmount(newAmount);
+                return characterCurrency;
+            } else {
+                return null;
+            }
+        }
+    }
 
 }

@@ -16,8 +16,20 @@ public class CharacterDao {
         try (PreparedStatement stmt = cxn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, player.getPlayerID());
             stmt.setInt(2, clan.getClanID());
-            stmt.setString(3, firstName);
-            stmt.setString(4, lastName);
+            
+            // 处理可能为null的字符串
+            if (firstName == null) {
+                stmt.setNull(3, Types.VARCHAR);
+            } else {
+                stmt.setString(3, firstName);
+            }
+            
+            if (lastName == null) {
+                stmt.setNull(4, Types.VARCHAR);
+            } else {
+                stmt.setString(4, lastName);
+            }
+            
             stmt.executeUpdate();
 
             try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -56,10 +68,17 @@ public class CharacterDao {
 
 
     public static List<Character> getCharactersByLastName(Connection cxn, String lastName) throws SQLException {
-        String sql = "SELECT * FROM `Character` WHERE lastName = ?";
+        String sql = "SELECT * FROM `Character` WHERE lastName = ? OR (lastName IS NULL AND ? IS NULL)";
         List<Character> characters = new ArrayList<>();
         try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
-            stmt.setString(1, lastName);
+            if (lastName == null) {
+                stmt.setNull(1, Types.VARCHAR);
+                stmt.setNull(2, Types.VARCHAR);
+            } else {
+                stmt.setString(1, lastName);
+                stmt.setString(2, lastName);
+            }
+            
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     int characterID = rs.getInt("characterID");
@@ -81,7 +100,12 @@ public class CharacterDao {
     public static Character updateFirstName(Connection cxn, Character character, String newFirstName) throws SQLException {
         String sql = "UPDATE `Character` SET firstName = ? WHERE characterID = ?";
         try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
-            stmt.setString(1, newFirstName);
+            if (newFirstName == null) {
+                stmt.setNull(1, Types.VARCHAR);
+            } else {
+                stmt.setString(1, newFirstName);
+            }
+            
             stmt.setInt(2, character.getCharacterID());
             int updated = stmt.executeUpdate();
             if (updated == 1) {
@@ -136,8 +160,14 @@ public class CharacterDao {
         List<Character> characters = new ArrayList<>();
         try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
             String searchTerm = "%" + name + "%";
-            stmt.setString(1, searchTerm);
-            stmt.setString(2, searchTerm);
+            if (name == null) {
+                stmt.setNull(1, Types.VARCHAR);
+                stmt.setNull(2, Types.VARCHAR);
+            } else {
+                stmt.setString(1, searchTerm);
+                stmt.setString(2, searchTerm);
+            }
+            
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     int characterID = rs.getInt("characterID");
@@ -162,7 +192,12 @@ public class CharacterDao {
     public static Character updateLastName(Connection cxn, Character character, String newLastName) throws SQLException {
         String sql = "UPDATE `Character` SET lastName = ? WHERE characterID = ?";
         try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
-            stmt.setString(1, newLastName);
+            if (newLastName == null) {
+                stmt.setNull(1, Types.VARCHAR);
+            } else {
+                stmt.setString(1, newLastName);
+            }
+            
             stmt.setInt(2, character.getCharacterID());
             int updated = stmt.executeUpdate();
             if (updated == 1) {

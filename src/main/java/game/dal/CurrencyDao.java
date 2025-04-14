@@ -13,16 +13,19 @@ public class CurrencyDao {
         String sql = "INSERT INTO Currency (currencyName, cap, weeklyCap) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = cxn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, currencyName);
-            if (cap != null) {
-                stmt.setInt(2, cap);
-            } else {
+            
+            if (cap == null) {
                 stmt.setNull(2, Types.INTEGER);
-            }
-            if (weeklyCap != null) {
-                stmt.setInt(3, weeklyCap);
             } else {
-                stmt.setNull(3, Types.INTEGER);
+                stmt.setInt(2, cap);
             }
+            
+            if (weeklyCap == null) {
+                stmt.setNull(3, Types.INTEGER);
+            } else {
+                stmt.setInt(3, weeklyCap);
+            }
+            
             stmt.executeUpdate();
 
             try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -46,14 +49,10 @@ public class CurrencyDao {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     String currencyName = rs.getString("currencyName");
-                    Integer cap = rs.getInt("cap");
-                    if (rs.wasNull()) {
-                        cap = null;
-                    }
-                    Integer weeklyCap = rs.getInt("weeklyCap");
-                    if (rs.wasNull()) {
-                        weeklyCap = null;
-                    }
+                    
+                    Integer cap = rs.getObject("cap", Integer.class);
+                    Integer weeklyCap = rs.getObject("weeklyCap", Integer.class);
+
                     return new Currency(currencyID, currencyName, cap, weeklyCap);
                 } else {
                     return null;
@@ -62,4 +61,26 @@ public class CurrencyDao {
         }
     }
 
+    /**
+     * Updates the weekly cap of a currency.
+     */
+    public static Currency updateWeeklyCap(Connection cxn, Currency currency, Integer newWeeklyCap) throws SQLException {
+        String sql = "UPDATE Currency SET weeklyCap = ? WHERE currencyID = ?";
+        try (PreparedStatement stmt = cxn.prepareStatement(sql)) {
+            if (newWeeklyCap == null) {
+                stmt.setNull(1, Types.INTEGER);
+            } else {
+                stmt.setInt(1, newWeeklyCap);
+            }
+            
+            stmt.setInt(2, currency.getCurrencyID());
+            int updated = stmt.executeUpdate();
+            if (updated == 1) {
+                currency.setWeeklyCap(newWeeklyCap);
+                return currency;
+            } else {
+                return null;
+            }
+        }
+    }
 }

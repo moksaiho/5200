@@ -19,9 +19,24 @@ public class StatisticBonusDao {
             stmt.setInt(1, item.getItemID());
             stmt.setString(2, statistic.getStatName());
             stmt.setString(3, bonusType);
-            stmt.setInt(4, bonusFlatValue);
-            stmt.setFloat(5, bonusPercentageValue);
-            stmt.setInt(6, bonusCap);
+            
+            if (bonusFlatValue == null) {
+                stmt.setNull(4, java.sql.Types.INTEGER);
+            } else {
+                stmt.setInt(4, bonusFlatValue);
+            }
+            
+            if (bonusPercentageValue == null) {
+                stmt.setNull(5, java.sql.Types.FLOAT);
+            } else {
+                stmt.setFloat(5, bonusPercentageValue);
+            }
+            
+            if (bonusCap == null) {
+                stmt.setNull(6, java.sql.Types.INTEGER);
+            } else {
+                stmt.setInt(6, bonusCap);
+            }
             
             stmt.executeUpdate();
             
@@ -40,9 +55,10 @@ public class StatisticBonusDao {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     String bonusType = rs.getString("bonusType");
-                    Integer bonusFlatValue = rs.getInt("bonusFlatValue");
-                    Float bonusPercentageValue = rs.getFloat("bonusPercentageValue");
-                    Integer bonusCap = rs.getInt("bonusCap");
+                    
+                    Integer bonusFlatValue = rs.getObject("bonusFlatValue", Integer.class);
+                    Float bonusPercentageValue = rs.getObject("bonusPercentageValue", Float.class);
+                    Integer bonusCap = rs.getObject("bonusCap", Integer.class);
 
                     Item item = ItemDao.getItemByID(cxn, itemID);
                     StatisticType statistics = StatisticTypeDao.getStatisticTypeByID(cxn, statName);
