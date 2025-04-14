@@ -38,6 +38,7 @@ public class CharacterDetail extends HttpServlet {
             throws ServletException, IOException {
         // Get the characterId from the request
         String characterIdStr = request.getParameter("characterId");
+        System.out.println("characterId: " + characterIdStr); // log for debugging
         Integer characterId = null;
         
         try {
@@ -70,7 +71,7 @@ public class CharacterDetail extends HttpServlet {
             request.setAttribute("equippedItems", equippedItems);
             
             // Forward to the JSP
-            request.getRequestDispatcher(request.getContextPath() + "/CharacterDetail.jsp").forward(request, response);
+            request.getRequestDispatcher("/CharacterDetail.jsp").forward(request, response);
             
         } catch (SQLException e) {
             e.printStackTrace();
